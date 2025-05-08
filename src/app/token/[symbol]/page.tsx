@@ -58,7 +58,7 @@ const generateTransactionHistory = (symbol: string) => {
       description
     });
   }
-  return history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
 const tokens = [
@@ -89,17 +89,24 @@ const TokenDetails = () => {
   const [tokenData, setTokenData] = useState(tokenDataInit);
 
   const priceHistory = generatePriceHistory(tokenData.price, 30);
-  const transactionHistory = generateTransactionHistory(tokenData.symbol);
-
-  const getTransactionBadge = (type) => {
-    const styles = {
-      buy: "bg-iris-green/20 text-iris-green border-iris-green/30",
-      sell: "bg-iris-red/20 text-iris-red border-iris-red/30",
-      swap: "bg-iris-blue/20 text-iris-blue border-iris-blue/30",
-      protection: "bg-iris-purple/20 text-iris-purple-light border-iris-purple/30"
-    };
-    return <Badge className={styles[type] || "border"}>{type.charAt(0).toUpperCase() + type.slice(1)}</Badge>;
+    const transactionHistory = generateTransactionHistory(tokenData.symbol);
+    
+const getTransactionBadge = (type: string) => {
+  const styles: Record<string, string> = {
+    buy: "bg-iris-green/20 text-iris-green border-iris-green/30",
+    sell: "bg-iris-red/20 text-iris-red border-iris-red/30",
+    swap: "bg-iris-blue/20 text-iris-blue border-iris-blue/30",
+    protection: "bg-iris-purple/20 text-iris-purple-light border-iris-purple/30"
   };
+
+  const badgeStyle = styles[type] || "border";
+
+  return (
+    <Badge className={badgeStyle}>
+      {type.charAt(0).toUpperCase() + type.slice(1)}
+    </Badge>
+  );
+};
 
   const toggleProtection = () => {
     setTokenData(prev => {

@@ -29,7 +29,7 @@ export async function getProtocolStats(): Promise<ProtocolStats> {
     
     // Sum up all the max_coverage values
     const totalValueProtected = insuranceData.reduce(
-      (sum, policy) => sum + (parseFloat(policy.max_coverage) || 0), 
+      (sum, policy) => sum + (parseFloat(policy.max_coverage.toString()) || 0), 
       0
     );
     
@@ -113,7 +113,7 @@ export async function getRecentProtectionEvents(): Promise<ProtectionEvent[]> {
       const timeAgo = getTimeAgo(new Date(claim.created_at));
       
       // Convert amount to number and format to string
-      const amountNum = parseFloat(claim.amount || '0');
+      const amountNum = parseFloat(claim.amount.toString() || '0');
       
       return {
         time: timeAgo,

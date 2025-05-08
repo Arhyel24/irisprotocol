@@ -44,7 +44,7 @@ export async function updateUserPreferences(preferences: Partial<UserPreferences
         ...preferences,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id as string);
       
     if (error) {
       console.error("Error updating user preferences:", error);
