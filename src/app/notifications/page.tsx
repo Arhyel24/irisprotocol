@@ -18,7 +18,7 @@ interface Notification {
   created_at: string;
   read: boolean;
   type: string;
-  action_url?: string;
+  action_url: string | null;
 }
 
 export default function Notifications() {
