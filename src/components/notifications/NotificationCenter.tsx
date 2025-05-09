@@ -3,9 +3,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import NotificationList from "./NotificationList";
+import Link from "next/link";
 
 const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -138,7 +138,7 @@ const NotificationCenter: React.FC = () => {
           </div>
           
           <Link 
-            to="/notifications" 
+            href="/notifications" 
             className="block p-3 text-center text-sm text-iris-purple hover:bg-iris-purple/5 border-t border-iris-purple/10"
             onClick={() => setIsOpen(false)}
           >

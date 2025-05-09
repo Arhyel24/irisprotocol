@@ -1,162 +1,5 @@
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Resend } from "npm:resend@1.0.0";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
-const resend = new Resend(RESEND_API_KEY);
-
-interface NotificationRequest {
-  email: string;
-  type: string;
-  data: Record<string, string>;
-}
-
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-  
-  try {
-    const { email, type, data }: NotificationRequest = await req.json();
-    
-    if (!email || !type) {
-      return new Response(JSON.stringify({ error: "Email and type are required" }), { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-    
-    // Generate email template based on notification type
-    let subject = "IRIS Protocol Notification";
-    let html = generateBasicEmail("Notification", "You have a new notification from IRIS Protocol.");
-    
-    switch (type) {
-      case "insurancePurchase":
-        subject = "Insurance Purchase Confirmation";
-        html = generateInsuranceEmail(
-          "Insurance Purchased Successfully",
-          `Your ${data.tier} insurance policy has been purchased and is now active.`,
-          data.tier,
-          data.coverage,
-          data.expiry
-        );
-        break;
-      case "insuranceRenew":
-        subject = "Insurance Renewed Successfully";
-        html = generateInsuranceEmail(
-          "Insurance Renewed Successfully",
-          `Your ${data.tier} insurance policy has been renewed and is now active.`,
-          data.tier,
-          data.coverage,
-          data.expiry
-        );
-        break;
-      case "insuranceUpgrade":
-        subject = "Insurance Upgraded Successfully";
-        html = generateInsuranceEmail(
-          "Insurance Upgraded Successfully",
-          `Your insurance policy has been upgraded from ${data.oldTier} to ${data.newTier}.`,
-          data.newTier,
-          data.coverage,
-          data.expiry || "30 days from today"
-        );
-        break;
-      case "insuranceDowngrade":
-        subject = "Insurance Plan Changed";
-        html = generateInsuranceEmail(
-          "Insurance Plan Changed",
-          `Your insurance policy has been changed from ${data.oldTier} to ${data.newTier}.`,
-          data.newTier,
-          data.coverage,
-          data.expiry || "30 days from today"
-        );
-        break;
-      case "insuranceCancel":
-        subject = "Insurance Cancellation Confirmation";
-        html = generateBasicEmail(
-          "Insurance Cancelled",
-          `Your ${data.tier} insurance policy has been cancelled successfully. We hope to see you back soon!`
-        );
-        break;
-      case "claimSubmitted":
-        subject = "Claim Submitted Successfully";
-        html = generateClaimEmail(
-          "Claim Submitted Successfully",
-          `Your claim #${data.claimId} for ${data.amount} has been submitted successfully and is now being processed.`
-        );
-        break;
-      case "claimApproved":
-        subject = "Claim Approved";
-        html = generateClaimEmail(
-          "Claim Approved",
-          `Great news! Your claim #${data.claimId} for ${data.amount} has been approved.`
-        );
-        break;
-      case "claimRejected":
-        subject = "Claim Update";
-        html = generateClaimEmail(
-          "Claim Update",
-          `Your claim #${data.claimId} for ${data.amount} could not be approved at this time.`
-        );
-        break;
-      case "protectionEnabled":
-        subject = "Protection Enabled";
-        html = generateBasicEmail(
-          "Protection Enabled",
-          `Protection has been enabled for your account. Your assets are now being monitored for risks.`
-        );
-        break;
-      case "protectionDisabled":
-        subject = "Protection Disabled";
-        html = generateBasicEmail(
-          "Protection Disabled",
-          `Protection has been disabled for your account. Your assets are no longer being monitored for risks.`
-        );
-        break;
-      default:
-        html = generateBasicEmail(
-          "Notification",
-          "You have a new notification from IRIS Protocol."
-        );
-    }
-    
-    // Send email using Resend
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'IRIS Protocol <notifications@irisprotocol.com>',
-      to: [email],
-      subject: subject,
-      html: html,
-    });
-    
-    if (error) {
-      console.error("Email sending failed:", error);
-      throw error;
-    }
-    
-    console.log(`Email sent: ${type}`, { data: emailData, error: null });
-    
-    return new Response(JSON.stringify({ data: emailData, error: null }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-    
-  } catch (error) {
-    console.error("Error in send-notification function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-};
-
 // Generate a professional-looking basic email
-function generateBasicEmail(title: string, message: string): string {
+export function generateBasicEmail(title: string, message: string): string {
   return `
   <!DOCTYPE html>
   <html>
@@ -238,7 +81,7 @@ function generateBasicEmail(title: string, message: string): string {
 }
 
 // Generate a specialized insurance email
-function generateInsuranceEmail(title: string, message: string, tier: string, coverage: string, expiry: string): string {
+export function generateInsuranceEmail(title: string, message: string, tier: string, coverage: string, expiry: string): string {
   // Choose color scheme based on insurance tier
   let gradientColors = "linear-gradient(135deg, #7d4bff 0%, #6527be 100%)";
   if (tier === "Basic") {
@@ -382,7 +225,7 @@ function generateInsuranceEmail(title: string, message: string, tier: string, co
 }
 
 // Generate a specialized claim email
-function generateClaimEmail(title: string, message: string): string {
+export function generateClaimEmail(title: string, message: string): string {
   return `
   <!DOCTYPE html>
   <html>
@@ -481,5 +324,3 @@ function generateClaimEmail(title: string, message: string): string {
   </html>
   `;
 }
-
-serve(handler);

@@ -26,7 +26,7 @@ const tierStyles = {
   },
 };
 
-type TierId = keyof typeof tierStyles;
+// type TierId = keyof typeof tierStyles;
 
 // interface InsuranceTierCardProps {
 //   tier: Tier;

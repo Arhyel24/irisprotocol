@@ -22,9 +22,9 @@ export interface PaymentRecord {
   status: string;
   payment_method: string;
   duration_days: number;
-  insurance_policies?: {
+  insurance_policies: {
     tier: string;
-  };
+  } | null;
 }
 
 // Get active insurance policy for the current user
