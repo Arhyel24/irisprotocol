@@ -26,8 +26,16 @@ const tierStyles = {
   },
 };
 
+type TierId = keyof typeof tierStyles;
+
+// interface InsuranceTierCardProps {
+//   tier: Tier;
+//   selected: boolean;
+//   onSelect: (tier: Tier) => void;
+// }
+
 const InsuranceTierCard: React.FC<InsuranceTierCardProps> = ({ tier, selected, onSelect }) => {
-  const style = tierStyles[tier.id];
+  const style = tierStyles[tier.id as keyof typeof tierStyles];
 
   return (
     <motion.button
